@@ -48,13 +48,17 @@ jobs:
           echo "::add-matcher::${{ runner.tool_cache }}/php.json"
           echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
+      - name: Remove browser plugin from composer.json
+        run: |
+          # Create temporary composer.json without browser plugin
+          jq 'del(."require-dev"."pestphp/pest-plugin-browser")' composer.json > composer.tmp.json
+          mv composer.tmp.json composer.json
+          cat composer.json
+
       - name: Install dependencies
         run: |
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction
 
-      - name: List Installed Dependencies
-        run: composer show -D
-
       - name: Execute tests
-        run: vendor/bin/pest --ci --exclude-group=browser
+        run: vendor/bin/pest --ci
