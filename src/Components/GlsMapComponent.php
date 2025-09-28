@@ -62,7 +62,7 @@ class GlsMapComponent extends Component
         $this->dropoffPointsOnly = $dropoffPointsOnly;
 
         // Set functionality options
-        $this->useGeolocation = $useGeolocation ?? $config['defaults']['use_geolocation'];
+        $this->useGeolocation = $useGeolocation;
 
         // Set element ID (generate unique if not provided)
         $this->elementId = $id ?? 'gls-map-'.uniqid();

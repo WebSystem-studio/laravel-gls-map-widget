@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 
 class InstallCommand extends Command
 {
-    public $signature = 'gls-map-widget:install';
+    public $signature = 'gls-map-widget:install {--force : Force overwrite existing files}';
 
     public $description = 'Install and setup the GLS Map Widget package';
 
@@ -19,14 +19,14 @@ class InstallCommand extends Command
         $this->info('📝 Publishing configuration file...');
         $this->call('vendor:publish', [
             '--tag' => 'gls-map-widget-config',
-            '--force' => $this->option('force', false),
+            '--force' => $this->option('force'),
         ]);
 
         // Publish assets
         $this->info('📦 Publishing JavaScript assets...');
         $this->call('vendor:publish', [
             '--tag' => 'gls-map-widget-assets',
-            '--force' => $this->option('force', false),
+            '--force' => $this->option('force'),
         ]);
 
         $this->line('');
