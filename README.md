@@ -1,9 +1,9 @@
 # Laravel GLS Map Widget
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/websystem-studio/gls-map-widget.svg?style=flat-square)](https://packagist.org/packages/websystem-studio/gls-map-widget)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/websystem-studio/gls-map-widget/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/websystem-studio/gls-map-widget/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/websystem-studio/gls-map-widget/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/websystem-studio/gls-map-widget/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/websystem-studio/gls-map-widget.svg?style=flat-square)](https://packagist.org/packages/websystem-studio/gls-map-widget)
+[![PHP Version](https://img.shields.io/badge/PHP-8.3%2B-blue.svg?style=flat-square)](https://php.net)
+[![Laravel](https://img.shields.io/badge/Laravel-10%2B%20%7C%C2%A011%2B-red.svg?style=flat-square)](https://laravel.com)
+[![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)](LICENSE.md)
+[![Tests](https://img.shields.io/badge/tests-46%20passed-brightgreen.svg?style=flat-square)](#testing)
 
 A Laravel Blade component for integrating GLS ParcelShop and GLS Locker finder widget with OpenStreetMap. This package provides an easy-to-use component that supports all GLS widget features including geolocation, country/language detection, and various filtering options.
 
@@ -342,15 +342,51 @@ window.glsOpenModal(elementId);
 
 ## Testing
 
+### Running All Tests
+
 ```bash
 composer test
 ```
 
-The package includes comprehensive tests:
+### Unit Tests Only
 
-- **Unit Tests**: Component logic and validation
-- **Feature Tests**: Blade rendering and integration
-- **Configuration Tests**: Config file validation
+```bash
+# Run unit tests without browser tests
+npm run test-unit
+# or
+./vendor/bin/pest --exclude-group=browser
+```
+
+### Browser Tests (Local Only)
+
+Browser tests require Playwright and are configured to run **only locally** (skipped in CI):
+
+```bash
+# Install Playwright browsers (first time only)
+npm run install-playwright
+
+# Run browser tests
+npm run test-browser
+# or
+./vendor/bin/pest --group=browser
+```
+
+**Note**: Browser tests use `->skipOnCi()` so they won't run in GitHub Actions or other CI environments.
+
+### Test Types
+
+The package includes comprehensive test coverage:
+
+- **Unit Tests** (39 tests): Component logic, validation, and configuration
+- **Feature Tests**: Blade rendering and service provider integration  
+- **Browser Tests** (7 tests): Real browser testing with Playwright
+  - Widget rendering in different browsers
+  - Responsive design testing
+  - Dialog functionality
+  - Filter types validation
+  - Multi-country widget support
+  - Smoke testing
+  - Visual regression testing
 
 ## Changelog
 

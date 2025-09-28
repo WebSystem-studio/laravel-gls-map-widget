@@ -31,7 +31,7 @@ it('can render basic GLS widget in browser', function () {
     $page = visit('/test-basic-widget')->on()->desktop();
 
     $page->assertSee('GLS Widget Browser Test');
-})->group('browser');
+})->group('browser')->skipOnCi();
 
 // Test GLS dialog widget
 it('can render GLS dialog widget in browser', function () {
@@ -71,7 +71,7 @@ it('can render GLS dialog widget in browser', function () {
 
     $page->assertSee('GLS Dialog Browser Test')
         ->assertSee('Open GLS Dialog');
-})->group('browser');
+})->group('browser')->skipOnCi();
 
 // Test widget with filters
 it('can test widget with different filter types', function () {
@@ -117,7 +117,7 @@ it('can test widget with different filter types', function () {
         ->assertSee('Parcel Shops Only')
         ->assertSee('Parcel Lockers Only')
         ->assertSee('Drop-off Points Only');
-})->group('browser');
+})->group('browser')->skipOnCi();
 
 // Test responsiveness on different devices
 it('can test widget responsiveness on different devices', function () {
@@ -154,7 +154,7 @@ it('can test widget responsiveness on different devices', function () {
     // Test on mobile
     $mobilePage = visit('/test-responsive-widget')->on()->mobile();
     $mobilePage->assertSee('GLS Responsive Browser Test');
-})->group('browser');
+})->group('browser')->skipOnCi();
 
 // Test multiple country widgets
 it('can test multiple country widgets', function () {
@@ -201,7 +201,7 @@ it('can test multiple country widgets', function () {
         ->assertSee('Slovakia')
         ->assertSee('Czech Republic')
         ->assertSee('Hungary');
-})->group('browser');
+})->group('browser')->skipOnCi();
 
 // Smoke test for basic widget variations
 it('can smoke test all basic widget variations', function () {
@@ -226,7 +226,7 @@ it('can smoke test all basic widget variations', function () {
         // Just ensure the page loads without JavaScript errors
         $page->assertSee('Widget'); // All smoke test pages contain 'Widget' in their content
     }
-})->group('browser', 'smoke');
+})->group('browser', 'smoke')->skipOnCi();
 
 // Visual regression test
 it('can take screenshots for visual regression testing', function () {
@@ -271,4 +271,4 @@ it('can take screenshots for visual regression testing', function () {
 
     // Uncomment below for actual screenshot capture
     // $page->screenshot('gls-widget-visual-test');
-})->group('browser', 'visual');
+})->group('browser', 'visual')->skipOnCi();
