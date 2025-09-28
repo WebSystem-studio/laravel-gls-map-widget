@@ -6,20 +6,29 @@ use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 use WebSystem\GlsMapWidget\Exceptions\InvalidCountryException;
-use WebSystem\GlsMapWidget\Exceptions\InvalidLanguageException;
 use WebSystem\GlsMapWidget\Exceptions\InvalidFilterTypeException;
+use WebSystem\GlsMapWidget\Exceptions\InvalidLanguageException;
 
 class GlsMapComponent extends Component
 {
     public string $country;
+
     public ?string $language;
+
     public ?string $width;
+
     public ?string $height;
+
     public ?string $filterType;
+
     public bool $dropoffPointsOnly;
+
     public bool $useGeolocation;
+
     public string $elementId;
+
     public string $widgetType;
+
     public string $scriptUrl;
 
     /**
@@ -37,27 +46,27 @@ class GlsMapComponent extends Component
         string $widgetType = 'widget'
     ) {
         $config = config('gls-map-widget');
-        
+
         // Set country (with validation)
         $this->country = $this->validateAndSetCountry($country ?? $config['defaults']['country'], $config);
-        
+
         // Set language (auto-determine from country if not provided)
         $this->language = $this->validateAndSetLanguage($language, $this->country, $config);
-        
+
         // Set dimensions
         $this->width = $width ?? $config['defaults']['width'];
         $this->height = $height ?? $config['defaults']['height'];
-        
+
         // Set filter options
         $this->filterType = $this->validateAndSetFilterType($filterType, $config);
         $this->dropoffPointsOnly = $dropoffPointsOnly;
-        
+
         // Set functionality options
         $this->useGeolocation = $useGeolocation ?? $config['defaults']['use_geolocation'];
-        
+
         // Set element ID (generate unique if not provided)
-        $this->elementId = $id ?? 'gls-map-' . uniqid();
-        
+        $this->elementId = $id ?? 'gls-map-'.uniqid();
+
         // Set widget type and script URL
         $this->widgetType = $this->validateAndSetWidgetType($widgetType, $config);
         $this->scriptUrl = $config['country_endpoints'][$this->country];
@@ -73,10 +82,10 @@ class GlsMapComponent extends Component
         }
 
         $country = strtoupper($country);
-        
-        if (!in_array($country, $config['supported_countries'])) {
+
+        if (! in_array($country, $config['supported_countries'])) {
             throw new InvalidCountryException(
-                "Unsupported country: {$country}. Supported countries: " . implode(', ', $config['supported_countries'])
+                "Unsupported country: {$country}. Supported countries: ".implode(', ', $config['supported_countries'])
             );
         }
 
@@ -94,10 +103,10 @@ class GlsMapComponent extends Component
         }
 
         $language = strtoupper($language);
-        
-        if (!in_array($language, $config['supported_languages'])) {
+
+        if (! in_array($language, $config['supported_languages'])) {
             throw new InvalidLanguageException(
-                "Unsupported language: {$language}. Supported languages: " . implode(', ', $config['supported_languages'])
+                "Unsupported language: {$language}. Supported languages: ".implode(', ', $config['supported_languages'])
             );
         }
 
@@ -113,9 +122,9 @@ class GlsMapComponent extends Component
             return null;
         }
 
-        if (!in_array($filterType, $config['filter_types'])) {
+        if (! in_array($filterType, $config['filter_types'])) {
             throw new InvalidFilterTypeException(
-                "Invalid filter type: {$filterType}. Supported types: " . implode(', ', $config['filter_types'])
+                "Invalid filter type: {$filterType}. Supported types: ".implode(', ', $config['filter_types'])
             );
         }
 
@@ -127,9 +136,9 @@ class GlsMapComponent extends Component
      */
     private function validateAndSetWidgetType(string $widgetType, array $config): string
     {
-        if (!isset($config['widget_types'][$widgetType])) {
+        if (! isset($config['widget_types'][$widgetType])) {
             throw new \InvalidArgumentException(
-                "Invalid widget type: {$widgetType}. Supported types: " . implode(', ', array_keys($config['widget_types']))
+                "Invalid widget type: {$widgetType}. Supported types: ".implode(', ', array_keys($config['widget_types']))
             );
         }
 
@@ -203,12 +212,12 @@ class GlsMapComponent extends Component
      */
     public function getGeolocationConfig(): array
     {
-        if (!$this->useGeolocation) {
+        if (! $this->useGeolocation) {
             return [];
         }
 
         $config = config('gls-map-widget.geolocation');
-        
+
         return [
             'enabled' => true,
             'reverseGeocodingService' => $config['reverse_geocoding_service'],

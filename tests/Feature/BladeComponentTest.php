@@ -49,11 +49,11 @@ it('can render gls-map blade component', function () {
         'elementId' => 'test-gls-map',
         'widgetType' => 'gls-dpm',
         'scriptUrl' => 'https://map.gls-slovakia.com/widget/gls-dpm.js',
-        'getWidgetAttributesString' => fn() => 'id="test-gls-map" country="sk" language="sk"',
-        'getContainerStyles' => fn() => 'width: 100%; height: 600px',
-        'getGeolocationConfig' => fn() => [],
+        'getWidgetAttributesString' => fn () => 'id="test-gls-map" country="sk" language="sk"',
+        'getContainerStyles' => fn () => 'width: 100%; height: 600px',
+        'getGeolocationConfig' => fn () => [],
     ])->render();
-    
+
     expect($html)->toContain('gls-dpm')
         ->and($html)->toContain('id="test-gls-map"')
         ->and($html)->toContain('country="sk"')
@@ -73,11 +73,11 @@ it('renders correct widget type for dialog', function () {
         'elementId' => 'test-gls-dialog',
         'widgetType' => 'gls-dpm-dialog',
         'scriptUrl' => 'https://map.gls-slovakia.com/widget/gls-dpm.js',
-        'getWidgetAttributesString' => fn() => 'id="test-gls-dialog" country="sk"',
-        'getContainerStyles' => fn() => 'width: 100%; height: 600px',
-        'getGeolocationConfig' => fn() => [],
+        'getWidgetAttributesString' => fn () => 'id="test-gls-dialog" country="sk"',
+        'getContainerStyles' => fn () => 'width: 100%; height: 600px',
+        'getGeolocationConfig' => fn () => [],
     ])->render();
-    
+
     expect($html)->toContain('gls-dpm-dialog')
         ->and($html)->toContain('id="test-gls-dialog"');
 });
@@ -94,15 +94,15 @@ it('includes geolocation script when enabled', function () {
         'elementId' => 'test-gls-geo',
         'widgetType' => 'gls-dpm',
         'scriptUrl' => 'https://map.gls-slovakia.com/widget/gls-dpm.js',
-        'getWidgetAttributesString' => fn() => 'id="test-gls-geo" country="sk"',
-        'getContainerStyles' => fn() => 'width: 100%; height: 600px',
-        'getGeolocationConfig' => fn() => [
+        'getWidgetAttributesString' => fn () => 'id="test-gls-geo" country="sk"',
+        'getContainerStyles' => fn () => 'width: 100%; height: 600px',
+        'getGeolocationConfig' => fn () => [
             'enabled' => true,
             'reverseGeocodingService' => 'nominatim',
             'nominatimEndpoint' => 'https://nominatim.openstreetmap.org/reverse',
         ],
     ])->render();
-    
+
     expect($html)->toContain('window.glsMapConfig')
         ->and($html)->toContain('test-gls-geo')
         ->and($html)->toContain('navigator.geolocation');
@@ -120,11 +120,11 @@ it('does not include geolocation script when disabled', function () {
         'elementId' => 'test-gls-no-geo',
         'widgetType' => 'gls-dpm',
         'scriptUrl' => 'https://map.gls-slovakia.com/widget/gls-dpm.js',
-        'getWidgetAttributesString' => fn() => 'id="test-gls-no-geo" country="sk"',
-        'getContainerStyles' => fn() => 'width: 100%; height: 600px',
-        'getGeolocationConfig' => fn() => [],
+        'getWidgetAttributesString' => fn () => 'id="test-gls-no-geo" country="sk"',
+        'getContainerStyles' => fn () => 'width: 100%; height: 600px',
+        'getGeolocationConfig' => fn () => [],
     ])->render();
-    
+
     expect($html)->not->toContain('window.glsMapConfig')
         ->and($html)->not->toContain('navigator.geolocation');
 });
@@ -141,11 +141,11 @@ it('includes event handling script for all components', function () {
         'elementId' => 'test-events',
         'widgetType' => 'gls-dpm',
         'scriptUrl' => 'https://map.gls-slovakia.com/widget/gls-dpm.js',
-        'getWidgetAttributesString' => fn() => 'id="test-events" country="sk"',
-        'getContainerStyles' => fn() => 'width: 100%; height: 600px',
-        'getGeolocationConfig' => fn() => [],
+        'getWidgetAttributesString' => fn () => 'id="test-events" country="sk"',
+        'getContainerStyles' => fn () => 'width: 100%; height: 600px',
+        'getGeolocationConfig' => fn () => [],
     ])->render();
-    
+
     expect($html)->toContain('addEventListener(\'change\'')
         ->and($html)->toContain('gls-delivery-point-selected')
         ->and($html)->toContain('test-events');
@@ -163,11 +163,11 @@ it('includes modal functionality for dialog type', function () {
         'elementId' => 'test-modal',
         'widgetType' => 'gls-dpm-dialog',
         'scriptUrl' => 'https://map.gls-slovakia.com/widget/gls-dpm.js',
-        'getWidgetAttributesString' => fn() => 'id="test-modal" country="sk"',
-        'getContainerStyles' => fn() => 'width: 100%; height: 600px',
-        'getGeolocationConfig' => fn() => [],
+        'getWidgetAttributesString' => fn () => 'id="test-modal" country="sk"',
+        'getContainerStyles' => fn () => 'width: 100%; height: 600px',
+        'getGeolocationConfig' => fn () => [],
     ])->render();
-    
+
     expect($html)->toContain('window.glsOpenModal')
         ->and($html)->toContain('showModal');
 });
@@ -184,11 +184,11 @@ it('does not include modal functionality for widget type', function () {
         'elementId' => 'test-no-modal',
         'widgetType' => 'gls-dpm',
         'scriptUrl' => 'https://map.gls-slovakia.com/widget/gls-dpm.js',
-        'getWidgetAttributesString' => fn() => 'id="test-no-modal" country="sk"',
-        'getContainerStyles' => fn() => 'width: 100%; height: 600px',
-        'getGeolocationConfig' => fn() => [],
+        'getWidgetAttributesString' => fn () => 'id="test-no-modal" country="sk"',
+        'getContainerStyles' => fn () => 'width: 100%; height: 600px',
+        'getGeolocationConfig' => fn () => [],
     ])->render();
-    
+
     expect($html)->not->toContain('window.glsOpenModal')
         ->and($html)->not->toContain('showModal');
 });
@@ -205,11 +205,11 @@ it('includes container div and basic structure', function () {
         'elementId' => 'test-styles',
         'widgetType' => 'gls-dpm',
         'scriptUrl' => 'https://map.gls-slovakia.com/widget/gls-dpm.js',
-        'getWidgetAttributesString' => fn() => 'id="test-styles" country="sk"',
-        'getContainerStyles' => fn() => 'width: 100%; height: 600px',
-        'getGeolocationConfig' => fn() => [],
+        'getWidgetAttributesString' => fn () => 'id="test-styles" country="sk"',
+        'getContainerStyles' => fn () => 'width: 100%; height: 600px',
+        'getGeolocationConfig' => fn () => [],
     ])->render();
-    
+
     expect($html)->toContain('class="gls-map-widget-container"')
         ->and($html)->toContain('style="width: 100%; height: 600px"')
         ->and($html)->toContain('<gls-dpm');

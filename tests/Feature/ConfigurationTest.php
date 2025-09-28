@@ -2,7 +2,7 @@
 
 it('loads configuration correctly', function () {
     $config = config('gls-map-widget');
-    
+
     expect($config)->toBeArray()
         ->and($config)->toHaveKey('country_endpoints')
         ->and($config)->toHaveKey('country_language_mapping')
@@ -16,7 +16,7 @@ it('loads configuration correctly', function () {
 
 it('has correct country endpoints', function () {
     $endpoints = config('gls-map-widget.country_endpoints');
-    
+
     expect($endpoints)->toHaveKey('SK', 'https://map.gls-slovakia.com/widget/gls-dpm.js')
         ->and($endpoints)->toHaveKey('CZ', 'https://map.gls-czech.com/widget/gls-dpm.js')
         ->and($endpoints)->toHaveKey('HU', 'https://map.gls-hungary.com/widget/gls-dpm.js')
@@ -28,7 +28,7 @@ it('has correct country endpoints', function () {
 
 it('has correct country language mappings', function () {
     $mappings = config('gls-map-widget.country_language_mapping');
-    
+
     expect($mappings)->toHaveKey('SK', 'SK')
         ->and($mappings)->toHaveKey('CZ', 'CS')
         ->and($mappings)->toHaveKey('HU', 'HU')
@@ -40,7 +40,7 @@ it('has correct country language mappings', function () {
 
 it('includes all supported countries', function () {
     $countries = config('gls-map-widget.supported_countries');
-    
+
     expect($countries)->toContain('SK')
         ->and($countries)->toContain('CZ')
         ->and($countries)->toContain('HU')
@@ -55,7 +55,7 @@ it('includes all supported countries', function () {
 
 it('includes all supported languages', function () {
     $languages = config('gls-map-widget.supported_languages');
-    
+
     expect($languages)->toContain('SK')
         ->and($languages)->toContain('CS')
         ->and($languages)->toContain('HU')
@@ -73,7 +73,7 @@ it('includes all supported languages', function () {
 
 it('has correct default values', function () {
     $defaults = config('gls-map-widget.defaults');
-    
+
     expect($defaults)->toHaveKey('width', '100%')
         ->and($defaults)->toHaveKey('height', '600px')
         ->and($defaults)->toHaveKey('country', 'SK')
@@ -83,7 +83,7 @@ it('has correct default values', function () {
 
 it('has geolocation configuration', function () {
     $geolocation = config('gls-map-widget.geolocation');
-    
+
     expect($geolocation)->toHaveKey('reverse_geocoding_service', 'nominatim')
         ->and($geolocation)->toHaveKey('nominatim_endpoint', 'https://nominatim.openstreetmap.org/reverse')
         ->and($geolocation)->toHaveKey('timeout_ms', 10000)
@@ -92,14 +92,14 @@ it('has geolocation configuration', function () {
 
 it('has correct widget types', function () {
     $widgetTypes = config('gls-map-widget.widget_types');
-    
+
     expect($widgetTypes)->toHaveKey('widget', 'gls-dpm')
         ->and($widgetTypes)->toHaveKey('dialog', 'gls-dpm-dialog');
 });
 
 it('has correct filter types', function () {
     $filterTypes = config('gls-map-widget.filter_types');
-    
+
     expect($filterTypes)->toContain('parcel-shop')
         ->and($filterTypes)->toContain('parcel-locker');
 });

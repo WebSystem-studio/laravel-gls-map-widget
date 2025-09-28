@@ -32,17 +32,17 @@ class InstallCommand extends Command
         $this->line('');
         $this->info('✅ GLS Map Widget installed successfully!');
         $this->line('');
-        
+
         $this->info('Quick start:');
         $this->line('<comment><x-gls-map country="SK" /></comment>');
         $this->line('');
-        
+
         $this->info('With geolocation:');
         $this->line('<comment><x-gls-map :use-geolocation="true" /></comment>');
         $this->line('');
-        
+
         $this->info('📚 Full documentation: https://github.com/WebSystem-studio/laravel-gls-map-widget');
-        
+
         return self::SUCCESS;
     }
 }

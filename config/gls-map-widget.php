@@ -78,7 +78,7 @@ return [
     |
     */
     'supported_languages' => [
-        'CS', 'HR', 'HU', 'RO', 'SR', 'SL', 'SK', 'PL', 'EN', 'DE', 'FR', 'ES', 'IT', 'BG'
+        'CS', 'HR', 'HU', 'RO', 'SR', 'SL', 'SK', 'PL', 'EN', 'DE', 'FR', 'ES', 'IT', 'BG',
     ],
 
     /*
@@ -90,7 +90,7 @@ return [
     |
     */
     'supported_countries' => [
-        'AT', 'BE', 'BG', 'CZ', 'DE', 'DK', 'ES', 'FI', 'FR', 'GR', 'HR', 'HU', 'IT', 'LU', 'NL', 'PL', 'PT', 'RO', 'RS', 'SI', 'SK'
+        'AT', 'BE', 'BG', 'CZ', 'DE', 'DK', 'ES', 'FI', 'FR', 'GR', 'HR', 'HU', 'IT', 'LU', 'NL', 'PL', 'PT', 'RO', 'RS', 'SI', 'SK',
     ],
 
     /*

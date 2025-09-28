@@ -27,9 +27,9 @@ it('can render basic GLS widget in browser', function () {
 </body>
 </html>';
     });
-    
+
     $page = visit('/test-basic-widget')->on()->desktop();
-    
+
     $page->assertSee('GLS Widget Browser Test');
 })->group('browser');
 
@@ -66,14 +66,14 @@ it('can render GLS dialog widget in browser', function () {
 </body>
 </html>';
     });
-    
+
     $page = visit('/test-dialog-widget')->on()->desktop();
-    
+
     $page->assertSee('GLS Dialog Browser Test')
-         ->assertSee('Open GLS Dialog');
+        ->assertSee('Open GLS Dialog');
 })->group('browser');
 
-// Test widget with filters 
+// Test widget with filters
 it('can test widget with different filter types', function () {
     Route::get('/test-filter-widget', function () {
         return '<!DOCTYPE html>
@@ -110,13 +110,13 @@ it('can test widget with different filter types', function () {
 </body>
 </html>';
     });
-    
+
     $page = visit('/test-filter-widget')->on()->desktop();
-    
+
     $page->assertSee('GLS Filter Types Browser Test')
-         ->assertSee('Parcel Shops Only')
-         ->assertSee('Parcel Lockers Only')
-         ->assertSee('Drop-off Points Only');
+        ->assertSee('Parcel Shops Only')
+        ->assertSee('Parcel Lockers Only')
+        ->assertSee('Drop-off Points Only');
 })->group('browser');
 
 // Test responsiveness on different devices
@@ -146,11 +146,11 @@ it('can test widget responsiveness on different devices', function () {
 </body>
 </html>';
     });
-    
+
     // Test on desktop
     $desktopPage = visit('/test-responsive-widget')->on()->desktop();
     $desktopPage->assertSee('GLS Responsive Browser Test');
-    
+
     // Test on mobile
     $mobilePage = visit('/test-responsive-widget')->on()->mobile();
     $mobilePage->assertSee('GLS Responsive Browser Test');
@@ -194,13 +194,13 @@ it('can test multiple country widgets', function () {
 </body>
 </html>';
     });
-    
+
     $page = visit('/test-multi-country')->on()->desktop();
-    
+
     $page->assertSee('GLS Multi-Country Browser Test')
-         ->assertSee('Slovakia')
-         ->assertSee('Czech Republic')
-         ->assertSee('Hungary');
+        ->assertSee('Slovakia')
+        ->assertSee('Czech Republic')
+        ->assertSee('Hungary');
 })->group('browser');
 
 // Smoke test for basic widget variations
@@ -209,18 +209,18 @@ it('can smoke test all basic widget variations', function () {
     Route::get('/smoke-test-1', function () {
         return '<!DOCTYPE html><html><head><title>Smoke Test 1</title></head><body><h1>Basic Widget</h1><gls-dpm country="sk"></gls-dpm><script type="module" src="https://map.gls-slovakia.com/widget/gls-dpm.js" async></script></body></html>';
     });
-    
+
     Route::get('/smoke-test-2', function () {
         return '<!DOCTYPE html><html><head><title>Smoke Test 2</title></head><body><h1>Dialog Widget</h1><gls-dpm-dialog country="cz"></gls-dpm-dialog><script type="module" src="https://map.gls-czech.com/widget/gls-dpm.js" async></script></body></html>';
     });
-    
+
     Route::get('/smoke-test-3', function () {
         return '<!DOCTYPE html><html><head><title>Smoke Test 3</title></head><body><h1>Filtered Widget</h1><gls-dpm country="hu" filters="parcelshop"></gls-dpm><script type="module" src="https://map.gls-hungary.com/widget/gls-dpm.js" async></script></body></html>';
     });
-    
+
     // Test each route
     $routes = ['/smoke-test-1', '/smoke-test-2', '/smoke-test-3'];
-    
+
     foreach ($routes as $route) {
         $page = visit($route)->on()->desktop();
         // Just ensure the page loads without JavaScript errors
@@ -260,15 +260,15 @@ it('can take screenshots for visual regression testing', function () {
 </body>
 </html>';
     });
-    
+
     $page = visit('/test-visual-regression')
         ->on()->desktop()
         ->inLightMode();
-    
+
     $page->assertSee('GLS Map Widget Visual Test')
-         ->assertSee('Slovakia Widget')
-         ->assertSee('Czech Republic - Parcel Lockers');
-    
+        ->assertSee('Slovakia Widget')
+        ->assertSee('Czech Republic - Parcel Lockers');
+
     // Uncomment below for actual screenshot capture
     // $page->screenshot('gls-widget-visual-test');
 })->group('browser', 'visual');
