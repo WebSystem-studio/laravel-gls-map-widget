@@ -66,10 +66,52 @@ async function applyLocationToWidget(elementId, config, locationData, isFromCach
     }
 
     const element = document.getElementById(elementId);
+
+    // Update widget attributes
     element.setAttribute('country', country.toLowerCase());
     element.setAttribute('language', config.countryMapping[country]?.toLowerCase());
 
-    // Wait for GLS widget to load, then trigger search
+    // Load the correct country script first
+    const countryEndpoints = {
+        'AT': 'https://map.gls-austria.com/widget/gls-dpm.js',
+        'BE': 'https://map.gls-belgium.com/widget/gls-dpm.js',
+        'BG': 'https://map.gls-bulgaria.com/widget/gls-dpm.js',
+        'CZ': 'https://map.gls-czech.com/widget/gls-dpm.js',
+        'DE': 'https://map.gls-germany.com/widget/gls-dpm.js',
+        'DK': 'https://map.gls-denmark.com/widget/gls-dpm.js',
+        'ES': 'https://map.gls-spain.com/widget/gls-dpm.js',
+        'FI': 'https://map.gls-finland.com/widget/gls-dpm.js',
+        'FR': 'https://map.gls-france.com/widget/gls-dpm.js',
+        'GR': 'https://map.gls-greece.com/widget/gls-dpm.js',
+        'HR': 'https://map.gls-croatia.com/widget/gls-dpm.js',
+        'HU': 'https://map.gls-hungary.com/widget/gls-dpm.js',
+        'IT': 'https://map.gls-italy.com/widget/gls-dpm.js',
+        'LU': 'https://map.gls-luxembourg.com/widget/gls-dpm.js',
+        'NL': 'https://map.gls-netherlands.com/widget/gls-dpm.js',
+        'PL': 'https://map.gls-poland.com/widget/gls-dpm.js',
+        'PT': 'https://map.gls-portugal.com/widget/gls-dpm.js',
+        'RO': 'https://map.gls-romania.com/widget/gls-dpm.js',
+        'RS': 'https://map.gls-serbia.com/widget/gls-dpm.js',
+        'SI': 'https://map.gls-slovenia.com/widget/gls-dpm.js',
+        'SK': 'https://map.gls-slovakia.com/widget/gls-dpm.js'
+    };
+
+    const scriptUrl = countryEndpoints[country];
+    if (!scriptUrl) {
+        console.warn(`No script URL for country: ${country}`);
+        return;
+    }
+
+    // Remove old script and load new one
+    const oldScript = document.querySelector(`script[id="gls-script-${elementId}"]`);
+    if (oldScript) {
+        oldScript.remove();
+    }
+
+    // Load the new script for detected country
+    await loadCountryScript(scriptUrl, elementId);
+
+    // Wait for widget to load, then trigger search
     if (postalCode || city) {
         await waitForWidgetAndSearch(element, postalCode || city);
         const cacheText = isFromCache ? ' (cached)' : '';
@@ -82,6 +124,30 @@ async function applyLocationToWidget(elementId, config, locationData, isFromCach
     document.dispatchEvent(new CustomEvent('gls-location-updated', {
         detail: { countryCode: country, postalCode, city, element, isFromCache }
     }));
+}
+
+/**
+ * Load country-specific GLS script
+ */
+async function loadCountryScript(scriptUrl, elementId) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = scriptUrl;
+        script.async = true;
+        script.id = `gls-script-${elementId}`;
+
+        script.onload = () => {
+            console.log(`GLS script loaded for ${scriptUrl}`);
+            resolve();
+        };
+        script.onerror = () => {
+            console.error(`Failed to load GLS script: ${scriptUrl}`);
+            reject(new Error(`Failed to load script: ${scriptUrl}`));
+        };
+
+        document.head.appendChild(script);
+    });
 }
 
 /**

@@ -8,7 +8,7 @@
 </div>
 
 {{-- Load the country-specific GLS script --}}
-<script type="module" src="{{ $scriptUrl }}" async></script>
+<script type="module" src="{{ $scriptUrl }}" async id="gls-script-{{ $elementId }}"></script>
 
 @if($useGeolocation)
     {{-- Include geolocation functionality --}}
