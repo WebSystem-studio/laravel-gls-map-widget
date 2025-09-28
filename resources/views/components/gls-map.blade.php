@@ -29,7 +29,7 @@
                 console.warn('Could not load GLS geolocation module:', error);
             });
         @else
-            // Simple fallback geolocation (KISS principle - 15 lines)
+            // Simple fallback geolocation with postal code search
             (function() {
                 const config = window.glsMapConfig['{{ $elementId }}'];
                 if (!config.enabled || !navigator.geolocation) return;
@@ -37,26 +37,61 @@
                 navigator.geolocation.getCurrentPosition(
                     async function(pos) {
                         try {
-                            const url = `https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`;
+                            const url = `https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json&addressdetails=1`;
                             const data = await fetch(url).then(r => r.json());
                             const country = data.address?.country_code?.toUpperCase();
+                            const postalCode = data.address?.postcode;
+                            const city = data.address?.city || data.address?.town || data.address?.village;
 
                             if (config.supportedCountries.includes(country)) {
                                 const element = document.getElementById('{{ $elementId }}');
                                 element.setAttribute('country', country.toLowerCase());
                                 element.setAttribute('language', config.countryLanguageMapping[country]?.toLowerCase());
 
-                                // Simple notification
-                                const notification = document.createElement('div');
-                                notification.style.cssText = `
-                                    position: fixed; top: 20px; right: 20px; z-index: 10000;
-                                    background: #2563eb; color: white; padding: 12px 16px;
-                                    border-radius: 6px; font-size: 14px; max-width: 350px;
-                                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                                `;
-                                notification.textContent = `🌍 Detekovaná krajina: ${country}. Zadajte PSČ do mapy pre vyhľadávanie ParcelShops.`;
-                                document.body.appendChild(notification);
-                                setTimeout(() => notification.remove(), 5000);
+                                // Wait for widget to load and trigger search
+                                if (postalCode || city) {
+                                    // Wait for widget (max 10 seconds)
+                                    for (let i = 0; i < 50; i++) {
+                                        await new Promise(resolve => setTimeout(resolve, 200));
+
+                                        // Try to find search input
+                                        const searchInput = element.shadowRoot?.querySelector('input[type="search"]') ||
+                                                           element.querySelector('input[type="search"]') ||
+                                                           element.querySelector('input[type="text"]');
+
+                                        if (searchInput) {
+                                            searchInput.value = postalCode || city;
+                                            searchInput.focus();
+                                            searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                                            searchInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+                                            // Show success notification
+                                            const notification = document.createElement('div');
+                                            notification.style.cssText = `
+                                                position: fixed; top: 20px; right: 20px; z-index: 10000;
+                                                background: #16a34a; color: white; padding: 12px 16px;
+                                                border-radius: 6px; font-size: 14px; max-width: 350px;
+                                                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                                            `;
+                                            notification.textContent = `🎯 Automaticky vyhľadané pre ${postalCode || city}, ${country}`;
+                                            document.body.appendChild(notification);
+                                            setTimeout(() => notification.remove(), 5000);
+                                            break;
+                                        }
+                                    }
+                                } else {
+                                    // Show country detection only
+                                    const notification = document.createElement('div');
+                                    notification.style.cssText = `
+                                        position: fixed; top: 20px; right: 20px; z-index: 10000;
+                                        background: #2563eb; color: white; padding: 12px 16px;
+                                        border-radius: 6px; font-size: 14px; max-width: 350px;
+                                        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                                    `;
+                                    notification.textContent = `🌍 Detekovaná krajina: ${country}. Zadajte PSČ do mapy.`;
+                                    document.body.appendChild(notification);
+                                    setTimeout(() => notification.remove(), 5000);
+                                }
                             }
                         } catch (error) {
                             console.warn('Geolokácia zlyhala:', error);

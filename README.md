@@ -129,7 +129,12 @@ document.addEventListener('gls-delivery-point-selected', function(event) {
 // Listen for geolocation updates
 document.addEventListener('gls-location-updated', function(event) {
     console.log('Location updated to:', event.detail.countryCode);
+    console.log('From cache:', event.detail.isFromCache);
+    console.log('Postal code:', event.detail.postalCode);
 });
+
+// Clear geolocation cache (for testing/debugging)
+window.clearGlsGeolocationCache();
 ```
 
 ## Geolocation
@@ -142,11 +147,12 @@ The package includes advanced geolocation functionality:
 
 ### How it works:
 
-1. **Browser Geolocation** - Requests user's GPS coordinates
-2. **Reverse Geocoding** - Determines country using OpenStreetMap Nominatim
-3. **Auto-Configuration** - Updates widget to show appropriate country's delivery points
-4. **Fallback** - Gracefully falls back to default country if geolocation fails
-5. **Caching** - Caches location data to avoid repeated API calls
+1. **Cache Check** - First checks localStorage for cached geolocation data (24h validity)
+2. **Browser Geolocation** - If no cache, requests user's GPS coordinates
+3. **Reverse Geocoding** - Determines country and postal code using OpenStreetMap Nominatim
+4. **Auto-Search** - Automatically triggers search in GLS widget with detected postal code
+5. **Smart Caching** - Saves location data to localStorage for instant future loads
+6. **Fallback** - Gracefully falls back to default country if geolocation fails
 
 ### Privacy & Permissions
 

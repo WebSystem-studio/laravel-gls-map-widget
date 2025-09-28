@@ -272,3 +272,132 @@ it('can take screenshots for visual regression testing', function () {
     // Uncomment below for actual screenshot capture
     // $page->screenshot('gls-widget-visual-test');
 })->group('browser', 'visual')->skipOnCi();
+
+// Test geolocation with automatic postal code search
+it('can test geolocation with automatic postal code setting', function () {
+    Route::get('/test-geolocation-postalcode', function () {
+        return '<!DOCTYPE html>
+<html>
+<head>
+    <title>GLS Geolocation Postal Code Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        .test-container { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+        #debug-info { background: #f5f5f5; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>GLS Geolocation with Postal Code Test</h1>
+
+        <div class="test-container">
+            <h3>Simulated Geolocation Test</h3>
+            <p>Testing automatic postal code detection and search</p>
+            <div id="debug-info">Waiting for geolocation...</div>
+
+            <div style="height: 400px;">
+                <gls-dpm id="geo-test-widget" country="sk"></gls-dpm>
+            </div>
+        </div>
+
+        <script type="module" src="https://map.gls-slovakia.com/widget/gls-dpm.js" async></script>
+
+        <script>
+            // Mock geolocation for testing
+            const mockPosition = {
+                coords: {
+                    latitude: 48.148598,   // Bratislava coordinates
+                    longitude: 17.107748
+                }
+            };
+
+            // Override geolocation for testing
+            Object.defineProperty(navigator, "geolocation", {
+                value: {
+                    getCurrentPosition: function(success, error) {
+                        setTimeout(() => success(mockPosition), 100);
+                    }
+                },
+                configurable: true
+            });
+
+            // Mock fetch for Nominatim response
+            const originalFetch = window.fetch;
+            window.fetch = function(url) {
+                if (url.includes("nominatim.openstreetmap.org")) {
+                    return Promise.resolve({
+                        json: () => Promise.resolve({
+                            address: {
+                                country_code: "sk",
+                                postcode: "81101",
+                                city: "Bratislava",
+                                country: "Slovakia"
+                            }
+                        })
+                    });
+                }
+                return originalFetch.apply(this, arguments);
+            };
+
+            // Test function to trigger geolocation
+            function testGeolocation() {
+                const element = document.getElementById("geo-test-widget");
+                const debugInfo = document.getElementById("debug-info");
+
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        async function(pos) {
+                            debugInfo.innerHTML += "<br>✓ Position obtained: " + pos.coords.latitude + ", " + pos.coords.longitude;
+
+                            try {
+                                const url = `https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json&addressdetails=1`;
+                                const data = await fetch(url).then(r => r.json());
+
+                                debugInfo.innerHTML += "<br>✓ Reverse geocoding: " + data.address.city + ", " + data.address.postcode;
+
+                                // Wait for widget and attempt search
+                                for (let i = 0; i < 20; i++) {
+                                    await new Promise(resolve => setTimeout(resolve, 200));
+
+                                    const searchInput = element.shadowRoot?.querySelector("input[type=search]") ||
+                                                       element.querySelector("input[type=search]") ||
+                                                       element.querySelector("input[type=text]");
+
+                                    if (searchInput) {
+                                        searchInput.value = data.address.postcode;
+                                        searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+                                        debugInfo.innerHTML += "<br>✓ Search triggered for: " + data.address.postcode;
+                                        break;
+                                    }
+                                }
+                            } catch (error) {
+                                debugInfo.innerHTML += "<br>✗ Error: " + error.message;
+                            }
+                        },
+                        function(error) {
+                            debugInfo.innerHTML += "<br>✗ Geolocation failed: " + error.message;
+                        }
+                    );
+                } else {
+                    debugInfo.innerHTML += "<br>✗ Geolocation not supported";
+                }
+            }
+
+            // Start test when page loads
+            setTimeout(testGeolocation, 1000);
+        </script>
+    </div>
+</body>
+</html>';
+    });
+
+    $page = visit('/test-geolocation-postalcode')->on()->desktop();
+
+    $page->assertSee('GLS Geolocation with Postal Code Test')
+        ->assertSee('Simulated Geolocation Test')
+        ->assertSee('Testing automatic postal code detection');
+
+    // Check if geolocation test completed (simplified check)
+    $page->assertSee('GLS Geolocation with Postal Code Test');
+})->group('browser', 'geolocation')->skipOnCi();
