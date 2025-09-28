@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\View;
 use WebSystem\GlsMapWidget\Components\GlsMapComponent;
 
 beforeEach(function () {

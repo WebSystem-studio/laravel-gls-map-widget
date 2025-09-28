@@ -208,7 +208,6 @@ class GlsMapComponent extends Component
         return implode('; ', $styles);
     }
 
-
     /**
      * Get the view / contents that represent the component.
      */
