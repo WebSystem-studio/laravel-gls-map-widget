@@ -1,7 +1,7 @@
 # Laravel GLS Map Widget
 
 [![PHP Version](https://img.shields.io/badge/PHP-8.3%2B-blue.svg?style=flat-square)](https://php.net)
-[![Laravel](https://img.shields.io/badge/Laravel-10%2B%20%7C%C2%A011%2B-red.svg?style=flat-square)](https://laravel.com)
+[![Laravel](https://img.shields.io/badge/Laravel-11%2B%20%7C%C2%A012%2B-red.svg?style=flat-square)](https://laravel.com)
 [![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)](LICENSE.md)
 [![Tests](https://img.shields.io/badge/tests-46%20passed-brightgreen.svg?style=flat-square)](#testing)
 
