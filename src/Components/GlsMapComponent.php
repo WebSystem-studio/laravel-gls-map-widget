@@ -4,6 +4,7 @@ namespace WebSystem\GlsMapWidget\Components;
 
 use Closure;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\View as ViewFacade;
 use Illuminate\View\Component;
 use WebSystem\GlsMapWidget\Exceptions\InvalidCountryException;
 use WebSystem\GlsMapWidget\Exceptions\InvalidFilterTypeException;
@@ -235,6 +236,6 @@ class GlsMapComponent extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('gls-map-widget::components.gls-map');
+        return ViewFacade::make('gls-map-widget::components.gls-map');
     }
 }
