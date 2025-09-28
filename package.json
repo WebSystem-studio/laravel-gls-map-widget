@@ -1,27 +1,27 @@
 {
-  "name": "gls-map-widget",
-  "version": "1.0.0",
-  "description": "Laravel GLS Map Widget package with browser testing support",
-  "scripts": {
-    "install-playwright": "npx playwright install",
-    "test-browser": "npm run install-playwright && ./vendor/bin/pest --group=browser",
-    "test-unit": "./vendor/bin/pest --exclude-group=browser",
-    "test-all": "./vendor/bin/pest"
-  },
-  "keywords": [
-    "laravel",
-    "gls",
-    "map",
-    "widget",
-    "pest",
-    "browser-testing"
-  ],
-  "author": "WebSystem Studio",
-  "license": "MIT",
-  "dependencies": {
-    "playwright": "^1.55.1"
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  }
+    "name": "gls-map-widget",
+    "version": "1.0.0",
+    "description": "Laravel GLS Map Widget package with browser testing support",
+    "scripts": {
+        "install-playwright": "npx playwright install",
+        "test-browser": "npm run install-playwright && ./vendor/bin/pest --group=browser",
+        "test-unit": "./vendor/bin/pest --exclude-group=browser",
+        "test-all": "./vendor/bin/pest"
+    },
+    "keywords": [
+        "laravel",
+        "gls",
+        "map",
+        "widget",
+        "pest",
+        "browser-testing"
+    ],
+    "author": "WebSystem Studio",
+    "license": "MIT",
+    "dependencies": {
+        "playwright": "^1.55.1"
+    },
+    "engines": {
+        "node": ">=16.0.0"
+    }
 }

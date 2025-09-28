@@ -50,9 +50,9 @@ it('can render GLS dialog widget in browser', function () {
     <div id="app">
         <h1>GLS Dialog Browser Test</h1>
         <button id="open-dialog" onclick="openModal()">Open GLS Dialog</button>
-        
+
         <gls-dpm-dialog id="gls-dialog" country="cz"></gls-dpm-dialog>
-        
+
         <script type="module" src="https://map.gls-czech.com/widget/gls-dpm.js" async></script>
         <script>
             function openModal() {
@@ -89,22 +89,22 @@ it('can test widget with different filter types', function () {
 <body>
     <div id="app">
         <h1>GLS Filter Types Browser Test</h1>
-        
+
         <div class="widget-section">
             <h3>Parcel Shops Only</h3>
             <gls-dpm id="parcel-shop-widget" country="sk" filters="parcelshop"></gls-dpm>
         </div>
-        
-        <div class="widget-section">  
+
+        <div class="widget-section">
             <h3>Parcel Lockers Only</h3>
             <gls-dpm id="parcel-locker-widget" country="sk" filters="parcellockers"></gls-dpm>
         </div>
-        
+
         <div class="widget-section">
             <h3>Drop-off Points Only</h3>
             <gls-dpm id="dropoff-widget" country="sk" filters="depots"></gls-dpm>
         </div>
-        
+
         <script type="module" src="https://map.gls-slovakia.com/widget/gls-dpm.js" async></script>
     </div>
 </body>
@@ -172,19 +172,19 @@ it('can test multiple country widgets', function () {
 <body>
     <div id="app">
         <h1>GLS Multi-Country Browser Test</h1>
-        
+
         <div class="country-section">
             <h3>Slovakia</h3>
             <gls-dpm id="sk-widget" country="sk"></gls-dpm>
             <script type="module" src="https://map.gls-slovakia.com/widget/gls-dpm.js" async></script>
         </div>
-        
+
         <div class="country-section">
             <h3>Czech Republic</h3>
             <gls-dpm id="cz-widget" country="cz"></gls-dpm>
             <script type="module" src="https://map.gls-czech.com/widget/gls-dpm.js" async></script>
         </div>
-        
+
         <div class="country-section">
             <h3>Hungary</h3>
             <gls-dpm id="hu-widget" country="hu"></gls-dpm>
@@ -244,13 +244,13 @@ it('can take screenshots for visual regression testing', function () {
 <body>
     <div id="app">
         <h1>GLS Map Widget Visual Test</h1>
-        
+
         <div class="visual-section">
             <h3>Slovakia Widget</h3>
             <gls-dpm id="visual-sk-widget" country="sk"></gls-dpm>
             <script type="module" src="https://map.gls-slovakia.com/widget/gls-dpm.js" async></script>
         </div>
-        
+
         <div class="visual-section">
             <h3>Czech Republic - Parcel Lockers</h3>
             <gls-dpm id="visual-cz-widget" country="cz" filters="parcellockers"></gls-dpm>
