@@ -26,7 +26,7 @@ Austria, Belgium, Bulgaria, Czech Republic, Germany, Denmark, Spain, Finland, Fr
 You can install the package via composer:
 
 ```bash
-composer require websystem-studio/gls-map-widget
+composer require websystem-sro/gls-map-widget
 ```
 
 Publish the config file with:
