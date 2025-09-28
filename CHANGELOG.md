@@ -2,9 +2,14 @@
 
 All notable changes to `gls-map-widget` will be documented in this file.
 
+## v1.0.0 - 2025-09-28
+
+**Full Changelog**: https://github.com/WebSystem-studio/laravel-gls-map-widget/commits/v1.0.0
+
 ## [1.0.0] - 2025-09-28
 
 ### Added
+
 - 🎉 Initial release of Laravel GLS Map Widget package
 - 🗺️ Full GLS ParcelShop and Locker finder widget integration
 - 🌍 Support for all 21 GLS supported countries
@@ -18,6 +23,7 @@ All notable changes to `gls-map-widget` will be documented in this file.
 - ⚡ Artisan commands for easy setup and information display
 
 ### Features
+
 - **Blade Component**: `<x-gls-map>` component with full attribute support
 - **Multi-Country Support**: AT, BE, BG, CZ, DE, DK, ES, FI, FR, GR, HR, HU, IT, LU, NL, PL, PT, RO, RS, SI, SK
 - **Geolocation**: Browser-based location detection with OpenStreetMap Nominatim integration
@@ -27,6 +33,7 @@ All notable changes to `gls-map-widget` will be documented in this file.
 - **TypeScript Support**: Modern ES6 modules with full browser compatibility
 
 ### Configuration
+
 - Country-specific GLS JavaScript endpoints
 - Language mappings for all supported countries
 - Geolocation service configuration
@@ -34,12 +41,14 @@ All notable changes to `gls-map-widget` will be documented in this file.
 - Filter type definitions
 
 ### Artisan Commands
+
 - `gls-map-widget:install` - Quick installation and setup
 - `gls-map-widget:info` - Display package information and usage examples
 
 ### Testing
+
 - Unit tests for component logic and validation
-- Feature tests for Blade rendering and integration  
+- Feature tests for Blade rendering and integration
 - Configuration validation tests
 - Service provider registration tests
 - Architecture tests for code quality
