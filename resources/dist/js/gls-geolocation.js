@@ -2,34 +2,62 @@
  * GLS Map Widget Simple Geolocation
  *
  * Simple geolocation functionality following KISS principle.
- * Enhanced with automatic postal code search and localStorage caching.
+ * Enhanced with automatic postal code search, localStorage caching and debug logging.
  */
 
 /**
  * Initialize simple geolocation for GLS widget with localStorage caching
  */
 function initGeoLocation(elementId, config) {
-    if (!config.enabled) return;
+    console.log('🚀 GLS Geolocation: Starting initialization', { elementId, config });
+
+    if (!config.enabled) {
+        console.log('❌ GLS Geolocation: Disabled in config');
+        return;
+    }
+
+    // Debug localStorage availability
+    try {
+        localStorage.setItem('gls_test', 'test');
+        localStorage.removeItem('gls_test');
+        console.log('✅ localStorage available');
+    } catch (e) {
+        console.error('❌ localStorage not available:', e);
+    }
 
     // First check if we have cached geolocation data
     const cachedLocation = getCachedGeolocation();
+    console.log('💾 Cached location data:', cachedLocation);
+
     if (cachedLocation && isLocationCacheValid(cachedLocation)) {
-        console.log('Using cached geolocation data');
+        console.log('🎯 Using cached geolocation data:', cachedLocation);
         applyLocationToWidget(elementId, config, cachedLocation, true);
         return;
+    } else if (cachedLocation) {
+        console.log('⏰ Cached data expired, getting fresh location');
+    } else {
+        console.log('📍 No cached data found, getting fresh location');
     }
 
     // Get fresh geolocation data
     if (!navigator.geolocation) {
-        console.warn('Geolocation not supported');
+        console.error('❌ Geolocation not supported by browser');
         return;
     }
+
+    console.log('📱 Requesting geolocation permission...');
 
     navigator.geolocation.getCurrentPosition(
         async (pos) => {
             try {
+                console.log('✅ Geolocation obtained:', pos.coords);
+
                 const url = `https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json&addressdetails=1`;
-                const data = await fetch(url).then(r => r.json());
+                console.log('🌐 Fetching reverse geocoding from:', url);
+
+                const response = await fetch(url);
+                const data = await response.json();
+                console.log('🗺️ Reverse geocoding result:', data);
 
                 const locationData = {
                     country: data.address?.country_code?.toUpperCase(),
@@ -40,6 +68,8 @@ function initGeoLocation(elementId, config) {
                     timestamp: Date.now()
                 };
 
+                console.log('📦 Prepared location data:', locationData);
+
                 // Cache the location data
                 cacheGeolocation(locationData);
 
@@ -47,10 +77,23 @@ function initGeoLocation(elementId, config) {
                 applyLocationToWidget(elementId, config, locationData, false);
 
             } catch (error) {
-                console.warn('Geolokácia zlyhala:', error);
+                console.error('❌ Geolocation processing failed:', error);
             }
         },
-        () => console.warn('Geolokácia zamietnutá')
+        (error) => {
+            console.error('❌ Geolocation denied/failed:', {
+                code: error.code,
+                message: error.message,
+                PERMISSION_DENIED: error.PERMISSION_DENIED,
+                POSITION_UNAVAILABLE: error.POSITION_UNAVAILABLE,
+                TIMEOUT: error.TIMEOUT
+            });
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 300000 // 5 minutes
+        }
     );
 }
 
@@ -156,10 +199,15 @@ async function loadCountryScript(scriptUrl, elementId) {
 function cacheGeolocation(locationData) {
     try {
         const cacheKey = 'gls_geolocation_cache';
+        console.log('💾 Caching geolocation data:', locationData);
         localStorage.setItem(cacheKey, JSON.stringify(locationData));
-        console.log('Geolocation data cached');
+        console.log('✅ Geolocation data cached successfully');
+
+        // Verify cache was written
+        const verification = localStorage.getItem(cacheKey);
+        console.log('🔍 Cache verification:', verification);
     } catch (error) {
-        console.warn('Could not cache geolocation:', error);
+        console.error('❌ Could not cache geolocation:', error);
     }
 }
 
@@ -169,10 +217,21 @@ function cacheGeolocation(locationData) {
 function getCachedGeolocation() {
     try {
         const cacheKey = 'gls_geolocation_cache';
+        console.log('🔍 Checking for cached geolocation data...');
+
         const cached = localStorage.getItem(cacheKey);
-        return cached ? JSON.parse(cached) : null;
+        console.log('📄 Raw cached data:', cached);
+
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            console.log('📦 Parsed cached data:', parsed);
+            return parsed;
+        } else {
+            console.log('📭 No cached data found');
+            return null;
+        }
     } catch (error) {
-        console.warn('Could not read cached geolocation:', error);
+        console.error('❌ Could not read cached geolocation:', error);
         return null;
     }
 }
@@ -192,10 +251,60 @@ function isLocationCacheValid(locationData) {
 function clearGeolocationCache() {
     try {
         localStorage.removeItem('gls_geolocation_cache');
-        console.log('Geolocation cache cleared');
+        console.log('🗑️ Geolocation cache cleared');
     } catch (error) {
-        console.warn('Could not clear cache:', error);
+        console.warn('❌ Could not clear cache:', error);
     }
+}
+
+/**
+ * Debug function to inspect geolocation status
+ */
+function debugGeolocation() {
+    console.log('🔧 === GLS GEOLOCATION DEBUG ===');
+
+    // Check localStorage
+    try {
+        localStorage.setItem('test', 'test');
+        localStorage.removeItem('test');
+        console.log('✅ localStorage: Available');
+    } catch (e) {
+        console.error('❌ localStorage: Not available', e);
+    }
+
+    // Check geolocation API
+    if (navigator.geolocation) {
+        console.log('✅ Geolocation API: Available');
+    } else {
+        console.error('❌ Geolocation API: Not available');
+    }
+
+    // Check cache content
+    const cache = getCachedGeolocation();
+    if (cache) {
+        console.log('💾 Cache status: Found', cache);
+        const isValid = isLocationCacheValid(cache);
+        console.log('⏰ Cache validity:', isValid ? 'Valid' : 'Expired');
+    } else {
+        console.log('📭 Cache status: Empty');
+    }
+
+    // Check if HTTPS
+    console.log('🔒 Protocol:', location.protocol);
+    if (location.protocol === 'https:') {
+        console.log('✅ HTTPS: Available for geolocation');
+    } else {
+        console.warn('⚠️ HTTP: Geolocation may be restricted');
+    }
+
+    // Check all localStorage keys
+    console.log('🗂️ All localStorage keys:');
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        console.log(`  - ${key}: ${localStorage.getItem(key)?.substring(0, 100)}...`);
+    }
+
+    console.log('🔧 === END DEBUG ===');
 }
 
 /**
@@ -303,8 +412,9 @@ function showSimpleNotification(message) {
 }
 
 // Export for usage
-export { initGeoLocation, clearGeolocationCache };
+export { initGeoLocation, clearGeolocationCache, debugGeolocation };
 
 // Make available globally
 window.initializeGlsGeolocation = initGeoLocation;
 window.clearGlsGeolocationCache = clearGeolocationCache;
+window.debugGlsGeolocation = debugGeolocation;

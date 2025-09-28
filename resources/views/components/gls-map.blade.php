@@ -17,6 +17,8 @@
         window.glsMapConfig = window.glsMapConfig || {};
         window.glsMapConfig['{{ $elementId }}'] = @json($getGeolocationConfig());
 
+        console.log('🔧 GLS Widget Config for {{ $elementId }}:', window.glsMapConfig['{{ $elementId }}']);
+
         // Import and initialize simple geolocation
         @if(file_exists(public_path('vendor/gls-map-widget/js/gls-geolocation.js')))
             import('{{ asset('vendor/gls-map-widget/js/gls-geolocation.js') }}').then(module => {
