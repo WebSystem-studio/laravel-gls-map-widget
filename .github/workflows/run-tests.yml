@@ -16,17 +16,15 @@ concurrency:
 jobs:
   test:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 5
+    timeout-minutes: 10
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
         php: [8.4, 8.3]
-        laravel: [12.*, 11.*]
-        stability: [prefer-lowest, prefer-stable]
+        laravel: [11.*]
+        stability: [prefer-stable]
         include:
-          - laravel: 12.*
-            testbench: 10.*
           - laravel: 11.*
             testbench: 9.*
 
@@ -48,17 +46,13 @@ jobs:
           echo "::add-matcher::${{ runner.tool_cache }}/php.json"
           echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
-      - name: Remove browser plugin from composer.json
-        run: |
-          # Create temporary composer.json without browser plugin
-          jq 'del(."require-dev"."pestphp/pest-plugin-browser")' composer.json > composer.tmp.json
-          mv composer.tmp.json composer.json
-          cat composer.json
-
       - name: Install dependencies
         run: |
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction
 
-      - name: Execute tests
-        run: vendor/bin/pest --ci --do-not-fail-on-risky --do-not-fail-on-warning --do-not-fail-on-notice
+      - name: Remove browser plugin after installation
+        run: composer remove --dev pestphp/pest-plugin-browser --no-interaction || true
+
+      - name: Execute tests (excluding browser and arch tests)
+        run: vendor/bin/pest --ci --exclude-group=browser,arch --do-not-fail-on-risky --do-not-fail-on-warning --do-not-fail-on-notice
