@@ -17,80 +17,52 @@
         window.glsMapConfig = window.glsMapConfig || {};
         window.glsMapConfig['{{ $elementId }}'] = @json($getGeolocationConfig());
 
-        // Import and initialize geolocation if enabled
+        // Import and initialize simple geolocation
         @if(file_exists(public_path('vendor/gls-map-widget/js/gls-geolocation.js')))
             import('{{ asset('vendor/gls-map-widget/js/gls-geolocation.js') }}').then(module => {
-                if (module.initializeGeolocation) {
-                    module.initializeGeolocation('{{ $elementId }}');
+                if (module.initGeoLocation) {
+                    const config = window.glsMapConfig['{{ $elementId }}'];
+                    config.countryMapping = config.countryLanguageMapping; // Fix naming
+                    module.initGeoLocation('{{ $elementId }}', config);
                 }
             }).catch(error => {
                 console.warn('Could not load GLS geolocation module:', error);
             });
         @else
-            // Fallback geolocation implementation
+            // Simple fallback geolocation (KISS principle - 15 lines)
             (function() {
                 const config = window.glsMapConfig['{{ $elementId }}'];
                 if (!config.enabled || !navigator.geolocation) return;
 
-                const element = document.getElementById('{{ $elementId }}');
-                if (!element) return;
-
-                // Add loading indicator
-                element.style.opacity = '0.7';
-                element.style.pointerEvents = 'none';
-
                 navigator.geolocation.getCurrentPosition(
-                    async function(position) {
+                    async function(pos) {
                         try {
-                            const { latitude, longitude } = position.coords;
-                            
-                            // Simple reverse geocoding using Nominatim
-                            const response = await fetch(
-                                `${config.nominatimEndpoint}?lat=${latitude}&lon=${longitude}&format=json&accept-language=en`
-                            );
-                            
-                            if (!response.ok) throw new Error('Geocoding failed');
-                            
-                            const data = await response.json();
-                            const countryCode = data.address?.country_code?.toUpperCase();
-                            
-                            if (countryCode && config.supportedCountries.includes(countryCode)) {
-                                const language = config.countryLanguageMapping[countryCode];
-                                const scriptUrl = config.countryEndpoints[countryCode];
-                                
-                                // Update element attributes
-                                element.setAttribute('country', countryCode.toLowerCase());
-                                if (language) {
-                                    element.setAttribute('language', language.toLowerCase());
-                                }
-                                
-                                // Reload the appropriate country script
-                                const newScript = document.createElement('script');
-                                newScript.type = 'module';
-                                newScript.src = scriptUrl;
-                                document.head.appendChild(newScript);
-                                
-                                console.log(`GLS Widget: Updated to country ${countryCode} with language ${language}`);
+                            const url = `https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`;
+                            const data = await fetch(url).then(r => r.json());
+                            const country = data.address?.country_code?.toUpperCase();
+
+                            if (config.supportedCountries.includes(country)) {
+                                const element = document.getElementById('{{ $elementId }}');
+                                element.setAttribute('country', country.toLowerCase());
+                                element.setAttribute('language', config.countryLanguageMapping[country]?.toLowerCase());
+
+                                // Simple notification
+                                const notification = document.createElement('div');
+                                notification.style.cssText = `
+                                    position: fixed; top: 20px; right: 20px; z-index: 10000;
+                                    background: #2563eb; color: white; padding: 12px 16px;
+                                    border-radius: 6px; font-size: 14px; max-width: 350px;
+                                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                                `;
+                                notification.textContent = `🌍 Detekovaná krajina: ${country}. Zadajte PSČ do mapy pre vyhľadávanie ParcelShops.`;
+                                document.body.appendChild(notification);
+                                setTimeout(() => notification.remove(), 5000);
                             }
                         } catch (error) {
-                            console.warn('GLS Widget: Geolocation reverse geocoding failed:', error);
-                        } finally {
-                            // Remove loading indicator
-                            element.style.opacity = '';
-                            element.style.pointerEvents = '';
+                            console.warn('Geolokácia zlyhala:', error);
                         }
                     },
-                    function(error) {
-                        console.warn('GLS Widget: Geolocation failed:', error.message);
-                        // Remove loading indicator
-                        element.style.opacity = '';
-                        element.style.pointerEvents = '';
-                    },
-                    {
-                        timeout: config.timeout,
-                        enableHighAccuracy: true,
-                        maximumAge: config.cacheDuration * 1000
-                    }
+                    () => console.warn('Geolokácia zamietnutá')
                 );
             })();
         @endif

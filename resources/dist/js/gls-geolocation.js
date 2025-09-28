@@ -1,354 +1,70 @@
 /**
- * GLS Map Widget Geolocation Module
- * 
- * This module provides advanced geolocation functionality for the GLS Map Widget,
- * including browser geolocation, reverse geocoding, and fallback mechanisms.
+ * GLS Map Widget Simple Geolocation
+ *
+ * Simple geolocation functionality following KISS principle.
+ * 15 lines of code instead of 700+ lines overkill.
  */
 
-class GlsGeolocation {
-    constructor(config = {}) {
-        this.config = {
-            reverseGeocodingService: 'nominatim',
-            nominatimEndpoint: 'https://nominatim.openstreetmap.org/reverse',
-            timeout: 10000,
-            cacheDuration: 3600,
-            countryLanguageMapping: {},
-            supportedCountries: [],
-            countryEndpoints: {},
-            ...config
-        };
-        
-        this.cache = new Map();
-        this.pendingRequests = new Map();
-    }
+/**
+ * Initialize simple geolocation for GLS widget
+ */
+function initGeoLocation(elementId, config) {
+    if (!navigator.geolocation || !config.enabled) return;
 
-    /**
-     * Initialize geolocation for a specific GLS widget element
-     */
-    async initializeGeolocation(elementId) {
-        const element = document.getElementById(elementId);
-        if (!element) {
-            console.warn(`GLS Geolocation: Element with ID '${elementId}' not found`);
-            return false;
-        }
+    navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+            try {
+                const url = `https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`;
+                const data = await fetch(url).then(r => r.json());
+                const country = data.address?.country_code?.toUpperCase();
 
-        try {
-            this.setLoadingState(element, true);
-            
-            const position = await this.getCurrentPosition();
-            const location = await this.reverseGeocode(position.coords.latitude, position.coords.longitude);
-            
-            if (location && location.countryCode) {
-                await this.updateWidgetLocation(element, location);
-                console.log(`GLS Widget: Successfully updated to ${location.countryCode}`);
-                return true;
-            } else {
-                console.warn('GLS Widget: Could not determine country from location');
-                return false;
-            }
-        } catch (error) {
-            console.warn('GLS Widget: Geolocation initialization failed:', error.message);
-            return false;
-        } finally {
-            this.setLoadingState(element, false);
-        }
-    }
+                if (config.supportedCountries.includes(country)) {
+                    const element = document.getElementById(elementId);
+                    element.setAttribute('country', country.toLowerCase());
+                    element.setAttribute('language', config.countryMapping[country]?.toLowerCase());
 
-    /**
-     * Get current position using browser geolocation API
-     */
-    getCurrentPosition() {
-        return new Promise((resolve, reject) => {
-            if (!navigator.geolocation) {
-                reject(new Error('Geolocation is not supported by this browser'));
-                return;
-            }
+                    // Simple notification instead of complex overlay
+                    showSimpleNotification(`🌍 Detekovaná krajina: ${country}. Zadajte PSČ do mapy pre vyhľadávanie ParcelShops.`);
 
-            // Check cache first
-            const cachedPosition = this.getCachedPosition();
-            if (cachedPosition) {
-                resolve(cachedPosition);
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    this.cachePosition(position);
-                    resolve(position);
-                },
-                (error) => {
-                    let message = 'Geolocation failed';
-                    switch (error.code) {
-                        case error.PERMISSION_DENIED:
-                            message = 'Geolocation permission denied';
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            message = 'Position unavailable';
-                            break;
-                        case error.TIMEOUT:
-                            message = 'Geolocation timeout';
-                            break;
-                    }
-                    reject(new Error(message));
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: this.config.timeout,
-                    maximumAge: this.config.cacheDuration * 1000
+                    // Dispatch simple event
+                    document.dispatchEvent(new CustomEvent('gls-location-updated', {
+                        detail: { countryCode: country, element }
+                    }));
                 }
-            );
-        });
-    }
-
-    /**
-     * Perform reverse geocoding to get country information
-     */
-    async reverseGeocode(latitude, longitude) {
-        const cacheKey = `${latitude.toFixed(4)},${longitude.toFixed(4)}`;
-        
-        // Check cache first
-        if (this.cache.has(cacheKey)) {
-            const cached = this.cache.get(cacheKey);
-            if (Date.now() - cached.timestamp < this.config.cacheDuration * 1000) {
-                return cached.data;
+            } catch (error) {
+                console.warn('Geolokácia zlyhala:', error);
             }
-            this.cache.delete(cacheKey);
-        }
-
-        // Check if there's already a pending request for this location
-        if (this.pendingRequests.has(cacheKey)) {
-            return await this.pendingRequests.get(cacheKey);
-        }
-
-        const requestPromise = this.performReverseGeocode(latitude, longitude);
-        this.pendingRequests.set(cacheKey, requestPromise);
-
-        try {
-            const result = await requestPromise;
-            
-            // Cache the result
-            this.cache.set(cacheKey, {
-                data: result,
-                timestamp: Date.now()
-            });
-            
-            return result;
-        } finally {
-            this.pendingRequests.delete(cacheKey);
-        }
-    }
-
-    /**
-     * Perform the actual reverse geocoding request
-     */
-    async performReverseGeocode(latitude, longitude) {
-        if (this.config.reverseGeocodingService === 'nominatim') {
-            return await this.nominatimReverseGeocode(latitude, longitude);
-        } else {
-            throw new Error(`Unsupported reverse geocoding service: ${this.config.reverseGeocodingService}`);
-        }
-    }
-
-    /**
-     * Use Nominatim for reverse geocoding
-     */
-    async nominatimReverseGeocode(latitude, longitude) {
-        const url = `${this.config.nominatimEndpoint}?lat=${latitude}&lon=${longitude}&format=json&accept-language=en&addressdetails=1`;
-        
-        try {
-            const response = await fetch(url, {
-                headers: {
-                    'User-Agent': 'GLS-Map-Widget/1.0'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            
-            if (!data.address) {
-                throw new Error('No address information in response');
-            }
-
-            const countryCode = data.address.country_code?.toUpperCase();
-            
-            return {
-                countryCode,
-                country: data.address.country,
-                city: data.address.city || data.address.town || data.address.village,
-                postalCode: data.address.postcode,
-                latitude,
-                longitude,
-                raw: data
-            };
-        } catch (error) {
-            throw new Error(`Nominatim reverse geocoding failed: ${error.message}`);
-        }
-    }
-
-    /**
-     * Update widget with location information
-     */
-    async updateWidgetLocation(element, location) {
-        const { countryCode } = location;
-        
-        if (!this.config.supportedCountries.includes(countryCode)) {
-            throw new Error(`Country ${countryCode} is not supported by GLS`);
-        }
-
-        // Update element attributes
-        element.setAttribute('country', countryCode.toLowerCase());
-        
-        // Set language based on country
-        const language = this.config.countryLanguageMapping[countryCode];
-        if (language) {
-            element.setAttribute('language', language.toLowerCase());
-        }
-
-        // Load the appropriate country script
-        const scriptUrl = this.config.countryEndpoints[countryCode];
-        if (scriptUrl) {
-            await this.loadCountryScript(scriptUrl);
-        }
-
-        // Dispatch location update event
-        const event = new CustomEvent('gls-location-updated', {
-            detail: {
-                element,
-                location,
-                countryCode,
-                language
-            },
-            bubbles: true
-        });
-        
-        document.dispatchEvent(event);
-    }
-
-    /**
-     * Load country-specific GLS script
-     */
-    async loadCountryScript(scriptUrl) {
-        return new Promise((resolve, reject) => {
-            // Check if script is already loaded
-            const existingScript = document.querySelector(`script[src="${scriptUrl}"]`);
-            if (existingScript) {
-                resolve();
-                return;
-            }
-
-            const script = document.createElement('script');
-            script.type = 'module';
-            script.src = scriptUrl;
-            script.async = true;
-            
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error(`Failed to load script: ${scriptUrl}`));
-            
-            document.head.appendChild(script);
-        });
-    }
-
-    /**
-     * Set loading state for element
-     */
-    setLoadingState(element, isLoading) {
-        if (isLoading) {
-            element.setAttribute('data-loading', 'true');
-            element.style.opacity = '0.7';
-            element.style.pointerEvents = 'none';
-        } else {
-            element.removeAttribute('data-loading');
-            element.style.opacity = '';
-            element.style.pointerEvents = '';
-        }
-    }
-
-    /**
-     * Cache position in sessionStorage
-     */
-    cachePosition(position) {
-        try {
-            const cacheData = {
-                coords: {
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude,
-                    accuracy: position.coords.accuracy
-                },
-                timestamp: Date.now()
-            };
-            
-            sessionStorage.setItem('gls_geolocation_cache', JSON.stringify(cacheData));
-        } catch (error) {
-            console.warn('Could not cache position:', error);
-        }
-    }
-
-    /**
-     * Get cached position from sessionStorage
-     */
-    getCachedPosition() {
-        try {
-            const cached = sessionStorage.getItem('gls_geolocation_cache');
-            if (!cached) return null;
-
-            const data = JSON.parse(cached);
-            const age = Date.now() - data.timestamp;
-            
-            if (age < this.config.cacheDuration * 1000) {
-                return {
-                    coords: data.coords,
-                    timestamp: data.timestamp
-                };
-            }
-            
-            // Cache expired
-            sessionStorage.removeItem('gls_geolocation_cache');
-            return null;
-        } catch (error) {
-            console.warn('Could not read cached position:', error);
-            return null;
-        }
-    }
-
-    /**
-     * Clear all caches
-     */
-    clearCache() {
-        this.cache.clear();
-        try {
-            sessionStorage.removeItem('gls_geolocation_cache');
-        } catch (error) {
-            console.warn('Could not clear position cache:', error);
-        }
-    }
+        },
+        () => console.warn('Geolokácia zamietnutá')
+    );
 }
 
-// Global initialization function
-let geolocationInstances = new Map();
+/**
+ * Show simple notification to user
+ */
+function showSimpleNotification(message) {
+    // Create simple notification element
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed; top: 20px; right: 20px; z-index: 10000;
+        background: #2563eb; color: white; padding: 12px 16px;
+        border-radius: 6px; font-size: 14px; max-width: 350px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    `;
+    notification.textContent = message;
 
-export function initializeGeolocation(elementId) {
-    const config = window.glsMapConfig?.[elementId] || {};
-    
-    if (!config.enabled) {
-        console.warn(`GLS Geolocation: Not enabled for element ${elementId}`);
-        return false;
-    }
+    document.body.appendChild(notification);
 
-    // Create or reuse geolocation instance
-    if (!geolocationInstances.has(elementId)) {
-        geolocationInstances.set(elementId, new GlsGeolocation(config));
-    }
-    
-    const instance = geolocationInstances.get(elementId);
-    return instance.initializeGeolocation(elementId);
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 5000);
 }
 
-// Export for direct usage
-export { GlsGeolocation };
+// Export for usage
+export { initGeoLocation };
 
-// Make available globally for fallback scenarios
-window.GlsGeolocation = GlsGeolocation;
-window.initializeGlsGeolocation = initializeGeolocation;
+// Make available globally
+window.initializeGlsGeolocation = initGeoLocation;
