@@ -371,7 +371,10 @@ npm run test-browser
 ./vendor/bin/pest --group=browser
 ```
 
-**Note**: Browser tests use `->skipOnCi()` so they won't run in GitHub Actions or other CI environments.
+**Note**: Browser tests are configured for local development only:
+- Use `->skipOnCi()` modifier to skip in CI environments
+- GitHub Actions workflow explicitly excludes browser tests (`--exclude-group=browser`)
+- Playwright installation not required in CI/production environments
 
 ### Test Types
 
@@ -387,6 +390,16 @@ The package includes comprehensive test coverage:
   - Multi-country widget support
   - Smoke testing
   - Visual regression testing
+
+### CI/CD Testing
+
+The package is configured for seamless CI/CD workflows:
+
+- **GitHub Actions**: Automatically runs unit tests only (`--exclude-group=browser`)
+- **Multi-Platform**: Tests on Ubuntu and Windows
+- **Multi-Version**: PHP 8.3/8.4 + Laravel 11/12 combinations
+- **PHPStan**: Static analysis with level 5 compliance
+- **No Playwright Required**: Browser tests excluded from CI environments
 
 ## Changelog
 
