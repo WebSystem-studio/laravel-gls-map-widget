@@ -2,6 +2,10 @@
 
 All notable changes to `gls-map-widget` will be documented in this file.
 
+## v1.0.4 - 2025-09-28
+
+**Full Changelog**: https://github.com/WebSystem-studio/laravel-gls-map-widget/compare/v1.0.3...v1.0.4
+
 ## v1.0.3 - 2025-09-28
 
 **Full Changelog**: https://github.com/WebSystem-studio/laravel-gls-map-widget/compare/v1.0.2...v1.0.3
