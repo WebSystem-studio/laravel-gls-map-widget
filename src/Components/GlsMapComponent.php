@@ -208,34 +208,18 @@ class GlsMapComponent extends Component
         return implode('; ', $styles);
     }
 
-    /**
-     * Get geolocation configuration for JavaScript.
-     */
-    public function getGeolocationConfig(): array
-    {
-        if (! $this->useGeolocation) {
-            return [];
-        }
-
-        $config = config('gls-map-widget.geolocation');
-
-        return [
-            'enabled' => true,
-            'reverseGeocodingService' => $config['reverse_geocoding_service'],
-            'nominatimEndpoint' => $config['nominatim_endpoint'],
-            'timeout' => $config['timeout_ms'],
-            'cacheDuration' => $config['cache_duration'],
-            'countryLanguageMapping' => config('gls-map-widget.country_language_mapping'),
-            'supportedCountries' => config('gls-map-widget.supported_countries'),
-            'countryEndpoints' => config('gls-map-widget.country_endpoints'),
-        ];
-    }
 
     /**
      * Get the view / contents that represent the component.
      */
     public function render(): View|Closure|string
     {
-        return ViewFacade::make('gls-map-widget::components.gls-map');
+        return ViewFacade::make('gls-map-widget::components.gls-map', [
+            'widgetType' => $this->widgetType,
+            'scriptUrl' => $this->scriptUrl,
+            'elementId' => $this->elementId,
+            'useGeolocation' => $this->useGeolocation,
+            'widgetAttributesString' => $this->getWidgetAttributesString(),
+        ]);
     }
 }

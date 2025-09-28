@@ -128,31 +128,22 @@ it('generates container styles correctly', function () {
         ->and($styles)->toContain('height: 400px');
 });
 
-it('generates geolocation config when enabled', function () {
+it('enables geolocation when requested', function () {
     $component = new GlsMapComponent(
         country: 'SK',
         useGeolocation: true
     );
 
-    $config = $component->getGeolocationConfig();
-
-    expect($config)->toHaveKey('enabled', true)
-        ->and($config)->toHaveKey('reverseGeocodingService')
-        ->and($config)->toHaveKey('nominatimEndpoint')
-        ->and($config)->toHaveKey('countryLanguageMapping')
-        ->and($config)->toHaveKey('supportedCountries')
-        ->and($config)->toHaveKey('countryEndpoints');
+    expect($component->useGeolocation)->toBeTrue();
 });
 
-it('returns empty geolocation config when disabled', function () {
+it('disables geolocation by default', function () {
     $component = new GlsMapComponent(
         country: 'SK',
         useGeolocation: false
     );
 
-    $config = $component->getGeolocationConfig();
-
-    expect($config)->toBeEmpty();
+    expect($component->useGeolocation)->toBeFalse();
 });
 
 it('generates unique element IDs when not provided', function () {

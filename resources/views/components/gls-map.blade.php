@@ -1,109 +1,167 @@
 {{-- GLS Map Widget Blade Component --}}
-<div class="gls-map-widget-container" style="{{ $getContainerStyles() }}">
-    @if($widgetType === 'gls-dpm')
-        <{{ $widgetType }} {!! $getWidgetAttributesString() !!}></{{ $widgetType }}>
-    @else
-        <{{ $widgetType }} {!! $getWidgetAttributesString() !!}></{{ $widgetType }}>
-    @endif
+<div class="gls-map-widget-container">
+    <{{ $widgetType }} {!! $widgetAttributesString !!}></{{ $widgetType }}>
 </div>
 
 {{-- Load the country-specific GLS script --}}
 <script type="module" src="{{ $scriptUrl }}" async id="gls-script-{{ $elementId }}"></script>
 
 @if($useGeolocation)
-    {{-- Include geolocation functionality --}}
-    <script type="module">
-        // Geolocation configuration
-        window.glsMapConfig = window.glsMapConfig || {};
-        window.glsMapConfig['{{ $elementId }}'] = @json($getGeolocationConfig());
+<script>
+    // Get user location data (country code + postal code)
+    document.addEventListener('DOMContentLoaded', function() {
+        const elementId = '{{ $elementId }}';
+        const element = document.getElementById(elementId);
 
-        console.log('🔧 GLS Widget Config for {{ $elementId }}:', window.glsMapConfig['{{ $elementId }}']);
+        if (!element) return;
 
-        // Import and initialize simple geolocation
-        @if(file_exists(public_path('vendor/gls-map-widget/js/gls-geolocation.js')))
-            import('{{ asset('vendor/gls-map-widget/js/gls-geolocation.js') }}').then(module => {
-                if (module.initGeoLocation) {
-                    const config = window.glsMapConfig['{{ $elementId }}'];
-                    config.countryMapping = config.countryLanguageMapping; // Fix naming
-                    module.initGeoLocation('{{ $elementId }}', config);
+        // Check if already saved
+        const saved = localStorage.getItem('userLocationData');
+        if (saved) {
+            const data = JSON.parse(saved);
+            console.log('🎯 Using cached location - Country Code:', data.country_code);
+            console.log('🎯 Using cached location - Postal Code (PSČ):', data.postcode);
+
+            // Apply cached data to widget
+            applyLocationToWidget(element, data.country_code, data.postcode);
+            return;
+        }
+
+        // Get new location
+        if ('geolocation' in navigator) {
+            console.log('📍 Requesting geolocation permission...');
+            navigator.geolocation.getCurrentPosition(async function(position) {
+                try {
+                    console.log('✅ Geolocation obtained:', position.coords);
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}&addressdetails=1`
+                    );
+                    const data = await response.json();
+                    console.log('🗺️ Reverse geocoding result:', data);
+
+                    const country_code = data.address?.country_code?.toUpperCase() || 'unknown';
+                    const postcode = data.address?.postcode || 'unknown';
+
+                    // Save to localStorage
+                    localStorage.setItem('userLocationData', JSON.stringify({
+                        country_code: country_code,
+                        postcode: postcode,
+                        saved_at: new Date().toISOString()
+                    }));
+
+                    console.log('💾 Saved to localStorage - Country Code:', country_code);
+                    console.log('💾 Saved to localStorage - Postal Code (PSČ):', postcode);
+
+                    // Apply to widget
+                    applyLocationToWidget(element, country_code, postcode);
+                } catch (error) {
+                    console.error('❌ Error getting location data:', error);
                 }
-            }).catch(error => {
-                console.warn('Could not load GLS geolocation module:', error);
+            }, function(error) {
+                console.error('❌ Geolocation denied/failed:', error);
             });
-        @else
-            // Simple fallback geolocation with postal code search
-            (function() {
-                const config = window.glsMapConfig['{{ $elementId }}'];
-                if (!config.enabled || !navigator.geolocation) return;
+        } else {
+            console.error('❌ Geolocation not supported by browser');
+        }
 
-                navigator.geolocation.getCurrentPosition(
-                    async function(pos) {
-                        try {
-                            const url = `https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json&addressdetails=1`;
-                            const data = await fetch(url).then(r => r.json());
-                            const country = data.address?.country_code?.toUpperCase();
-                            const postalCode = data.address?.postcode;
-                            const city = data.address?.city || data.address?.town || data.address?.village;
+        function applyLocationToWidget(element, countryCode, postalCode) {
+            // Update widget attributes
+            element.setAttribute('country', countryCode.toLowerCase());
 
-                            if (config.supportedCountries.includes(country)) {
-                                const element = document.getElementById('{{ $elementId }}');
-                                element.setAttribute('country', country.toLowerCase());
-                                element.setAttribute('language', config.countryLanguageMapping[country]?.toLowerCase());
+            // Set language based on country
+            const languageMapping = {
+                'SK': 'sk', 'CZ': 'cs', 'PL': 'pl', 'HU': 'hu', 'RO': 'ro',
+                'HR': 'hr', 'SI': 'sl', 'RS': 'sr', 'BG': 'bg',
+                'DE': 'de', 'AT': 'de', 'FR': 'fr', 'IT': 'it', 'ES': 'es',
+                'NL': 'en', 'BE': 'en', 'LU': 'en', 'DK': 'en', 'FI': 'en', 'GR': 'en', 'PT': 'en'
+            };
+            element.setAttribute('language', languageMapping[countryCode] || 'en');
 
-                                // Wait for widget to load and trigger search
-                                if (postalCode || city) {
-                                    // Wait for widget (max 10 seconds)
-                                    for (let i = 0; i < 50; i++) {
-                                        await new Promise(resolve => setTimeout(resolve, 200));
+            // Wait for widget to load and trigger postal code search
+            if (postalCode && postalCode !== 'unknown') {
+                setTimeout(() => {
+                    triggerPostalCodeSearch(element, postalCode, countryCode);
+                }, 2000); // Wait 2 seconds for widget to fully load
+            }
+        }
 
-                                        // Try to find search input
-                                        const searchInput = element.shadowRoot?.querySelector('input[type="search"]') ||
-                                                           element.querySelector('input[type="search"]') ||
-                                                           element.querySelector('input[type="text"]');
+        function triggerPostalCodeSearch(element, postalCode, countryCode) {
+            // Try to find search input in widget
+            const selectors = [
+                'input[type="search"]',
+                'input[type="text"]',
+                'input[placeholder*="PSČ"]',
+                'input[placeholder*="postcode"]',
+                'input[placeholder*="ZIP"]',
+                '.search-input'
+            ];
 
-                                        if (searchInput) {
-                                            searchInput.value = postalCode || city;
-                                            searchInput.focus();
-                                            searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-                                            searchInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+            let attempts = 0;
+            const maxAttempts = 25; // Try for 5 seconds (25 * 200ms)
 
-                                            // Show success notification
-                                            const notification = document.createElement('div');
-                                            notification.style.cssText = `
-                                                position: fixed; top: 20px; right: 20px; z-index: 10000;
-                                                background: #16a34a; color: white; padding: 12px 16px;
-                                                border-radius: 6px; font-size: 14px; max-width: 350px;
-                                                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                                            `;
-                                            notification.textContent = `🎯 Automaticky vyhľadané pre ${postalCode || city}, ${country}`;
-                                            document.body.appendChild(notification);
-                                            setTimeout(() => notification.remove(), 5000);
-                                            break;
-                                        }
-                                    }
-                                } else {
-                                    // Show country detection only
-                                    const notification = document.createElement('div');
-                                    notification.style.cssText = `
-                                        position: fixed; top: 20px; right: 20px; z-index: 10000;
-                                        background: #2563eb; color: white; padding: 12px 16px;
-                                        border-radius: 6px; font-size: 14px; max-width: 350px;
-                                        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                                    `;
-                                    notification.textContent = `🌍 Detekovaná krajina: ${country}. Zadajte PSČ do mapy.`;
-                                    document.body.appendChild(notification);
-                                    setTimeout(() => notification.remove(), 5000);
-                                }
-                            }
-                        } catch (error) {
-                            console.warn('Geolokácia zlyhala:', error);
-                        }
-                    },
-                    () => console.warn('Geolokácia zamietnutá')
-                );
-            })();
-        @endif
-    </script>
+            function attemptSearch() {
+                attempts++;
+
+                for (const selector of selectors) {
+                    // Try shadow DOM first
+                    const shadowInput = element.shadowRoot?.querySelector(selector);
+                    if (shadowInput) {
+                        setSearchValue(shadowInput, postalCode, countryCode);
+                        return;
+                    }
+
+                    // Try regular DOM
+                    const input = element.querySelector(selector);
+                    if (input) {
+                        setSearchValue(input, postalCode, countryCode);
+                        return;
+                    }
+                }
+
+                // If not found and haven't reached max attempts, try again
+                if (attempts < maxAttempts) {
+                    setTimeout(attemptSearch, 200);
+                } else {
+                    console.warn('⚠️ Could not find search input in GLS widget');
+                }
+            }
+
+            attemptSearch();
+        }
+
+        function setSearchValue(input, postalCode, countryCode) {
+            try {
+                input.value = postalCode;
+                input.focus();
+
+                // Trigger events
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+                input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+                console.log('✅ Triggered search for:', postalCode);
+
+                // Show notification
+                showNotification(`🎯 Automaticky vyhľadané pre ${postalCode}, ${countryCode}`);
+            } catch (error) {
+                console.error('❌ Error setting search value:', error);
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed; top: 20px; right: 20px; z-index: 10000;
+                background: #16a34a; color: white; padding: 12px 16px;
+                border-radius: 6px; font-size: 14px; max-width: 350px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }
+    });
+</script>
 @endif
 
 {{-- Event handling script --}}

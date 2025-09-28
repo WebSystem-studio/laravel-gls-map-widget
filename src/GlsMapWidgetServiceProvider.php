@@ -38,11 +38,6 @@ class GlsMapWidgetServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
-        // Publish JavaScript assets
-        if ($this->app->runningInConsole()) {
-            $this->publishes([
-                $this->package->basePath('/../resources/js') => public_path('vendor/gls-map-widget/js'),
-            ], "{$this->package->shortName()}-assets");
-        }
+        // No assets to publish - geolocation is now inline in Blade component
     }
 }
