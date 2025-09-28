@@ -1,68 +1,343 @@
-# :package_description
+# Laravel GLS Map Widget
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
-<!--delete-->
----
-This repo can be used to scaffold a Laravel package. Follow these steps to get started:
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/websystem-studio/gls-map-widget.svg?style=flat-square)](https://packagist.org/packages/websystem-studio/gls-map-widget)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/websystem-studio/gls-map-widget/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/websystem-studio/gls-map-widget/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/websystem-studio/gls-map-widget/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/websystem-studio/gls-map-widget/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
+[![Total Downloads](https://img.shields.io/packagist/dt/websystem-studio/gls-map-widget.svg?style=flat-square)](https://packagist.org/packages/websystem-studio/gls-map-widget)
 
-1. Press the "Use this template" button at the top of this repo to create a new repo with the contents of this skeleton.
-2. Run "php ./configure.php" to run a script that will replace all placeholders throughout all the files.
-3. Have fun creating your package.
-4. If you need help creating a package, consider picking up our <a href="https://laravelpackage.training">Laravel Package Training</a> video course.
----
-<!--/delete-->
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+A Laravel Blade component for integrating GLS ParcelShop and GLS Locker finder widget with OpenStreetMap. This package provides an easy-to-use component that supports all GLS widget features including geolocation, country/language detection, and various filtering options.
 
-## Support us
+## Features
 
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/:package_name.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/:package_name)
+- 🗺️ **Full GLS Widget Integration** - Supports both embedded widget and dialog modes
+- 🌍 **Multi-Country Support** - Works with all GLS supported countries (21 countries)
+- 📍 **Automatic Geolocation** - Optional browser-based location detection with fallback
+- 🎛️ **Flexible Filtering** - Filter by parcel shops, lockers, or drop-off points only
+- 🎨 **Customizable** - Configurable dimensions, styling, and behavior
+- 🧪 **Well Tested** - Comprehensive PEST test suite
+- ⚡ **Easy to Use** - Simple Blade component integration
 
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
+## Supported Countries
 
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
+Austria, Belgium, Bulgaria, Czech Republic, Germany, Denmark, Spain, Finland, France, Greece, Croatia, Hungary, Italy, Luxembourg, Netherlands, Poland, Portugal, Romania, Serbia, Slovenia, Slovakia.
 
 ## Installation
 
 You can install the package via composer:
 
 ```bash
-composer require :vendor_slug/:package_slug
+composer require websystem-studio/gls-map-widget
 ```
 
-You can publish and run the migrations with:
+Publish the config file with:
 
 ```bash
-php artisan vendor:publish --tag=":package_slug-migrations"
-php artisan migrate
+php artisan vendor:publish --tag="gls-map-widget-config"
 ```
 
-You can publish the config file with:
+Publish the JavaScript assets:
 
 ```bash
-php artisan vendor:publish --tag=":package_slug-config"
+php artisan vendor:publish --tag="gls-map-widget-assets"
 ```
 
-This is the contents of the published config file:
+Optionally, you can publish the views:
+
+```bash
+php artisan vendor:publish --tag="gls-map-widget-views"
+```
+
+## Quick Start
+
+### Basic Usage
+
+```php
+// Basic widget for Slovakia
+<x-gls-map country="SK" />
+
+// With custom dimensions
+<x-gls-map country="CZ" width="800px" height="500px" />
+
+// With geolocation (auto-detects user's country)
+<x-gls-map :use-geolocation="true" />
+```
+
+### Advanced Usage
+
+```php
+// Parcel lockers only with English language
+<x-gls-map 
+    country="HU" 
+    language="EN" 
+    filter-type="parcel-locker" 
+    width="100%" 
+    height="600px" 
+/>
+
+// Drop-off points only
+<x-gls-map 
+    country="PL" 
+    :dropoffpoints-only="true" 
+    id="custom-gls-widget" 
+/>
+
+// Dialog modal version
+<x-gls-map 
+    country="DE" 
+    widget-type="dialog" 
+    id="gls-modal" 
+/>
+
+<!-- Button to open modal -->
+<button onclick="glsOpenModal('gls-modal')">
+    Select Delivery Point
+</button>
+```
+
+## Component Attributes
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `country` | string | `SK` | Two-letter country code (AT, BE, BG, CZ, DE, DK, ES, FI, FR, GR, HR, HU, IT, LU, NL, PL, PT, RO, RS, SI, SK) |
+| `language` | string | auto | Two-letter language code (CS, HR, HU, RO, SR, SL, SK, PL, EN, DE, FR, ES, IT, BG) |
+| `width` | string | `100%` | Widget width (CSS value) |
+| `height` | string | `600px` | Widget height (CSS value) |
+| `filter-type` | string | null | Filter by type: `parcel-shop` or `parcel-locker` |
+| `dropoffpoints-only` | boolean | `false` | Show only drop-off points |
+| `use-geolocation` | boolean | `false` | Enable automatic location detection |
+| `id` | string | auto | Custom element ID |
+| `widget-type` | string | `widget` | Widget type: `widget` or `dialog` |
+
+## Event Handling
+
+The component dispatches events when a delivery point is selected:
+
+```javascript
+// Listen for delivery point selection
+document.addEventListener('gls-delivery-point-selected', function(event) {
+    console.log('Selected delivery point:', event.detail.deliveryPoint);
+    
+    // Access delivery point data
+    const point = event.detail.deliveryPoint;
+    console.log('ID:', point.id);
+    console.log('Name:', point.name);
+    console.log('Address:', point.contact.address);
+    console.log('City:', point.contact.city);
+    console.log('Postal Code:', point.contact.postalCode);
+});
+
+// Listen for geolocation updates
+document.addEventListener('gls-location-updated', function(event) {
+    console.log('Location updated to:', event.detail.countryCode);
+});
+```
+
+## Geolocation
+
+The package includes advanced geolocation functionality:
+
+```php
+<x-gls-map :use-geolocation="true" height="500px" />
+```
+
+### How it works:
+
+1. **Browser Geolocation** - Requests user's GPS coordinates
+2. **Reverse Geocoding** - Determines country using OpenStreetMap Nominatim
+3. **Auto-Configuration** - Updates widget to show appropriate country's delivery points
+4. **Fallback** - Gracefully falls back to default country if geolocation fails
+5. **Caching** - Caches location data to avoid repeated API calls
+
+### Privacy & Permissions
+
+- Geolocation only works with user consent
+- No coordinate data is sent to your server
+- Uses OpenStreetMap's free Nominatim service
+- Respects browser privacy settings
+
+## Configuration
+
+The config file provides extensive customization options:
 
 ```php
 return [
+    // Country-specific script endpoints
+    'country_endpoints' => [
+        'SK' => 'https://map.gls-slovakia.com/widget/gls-dpm.js',
+        'CZ' => 'https://map.gls-czech.com/widget/gls-dpm.js',
+        // ... all supported countries
+    ],
+
+    // Default language for each country
+    'country_language_mapping' => [
+        'SK' => 'SK',
+        'CZ' => 'CS',
+        // ... mappings for all countries
+    ],
+
+    // Default widget settings
+    'defaults' => [
+        'width' => '100%',
+        'height' => '600px',
+        'country' => 'SK',
+        'use_geolocation' => false,
+    ],
+
+    // Geolocation configuration
+    'geolocation' => [
+        'reverse_geocoding_service' => 'nominatim',
+        'nominatim_endpoint' => 'https://nominatim.openstreetmap.org/reverse',
+        'timeout_ms' => 10000,
+        'cache_duration' => 3600,
+    ],
 ];
 ```
 
-Optionally, you can publish the views using
+## Examples
 
-```bash
-php artisan vendor:publish --tag=":package_slug-views"
-```
-
-## Usage
+### E-commerce Checkout Integration
 
 ```php
-$variable = new VendorName\Skeleton();
-echo $variable->echoPhrase('Hello, VendorName!');
+<div class="delivery-selection">
+    <h3>Select Delivery Point</h3>
+    
+    <x-gls-map 
+        :use-geolocation="true"
+        width="100%" 
+        height="400px"
+        id="checkout-delivery-map" 
+    />
+    
+    <input type="hidden" name="selected_delivery_point" id="delivery-point-input">
+</div>
+
+<script>
+document.addEventListener('gls-delivery-point-selected', function(event) {
+    const deliveryPoint = event.detail.deliveryPoint;
+    
+    // Update hidden form field
+    document.getElementById('delivery-point-input').value = JSON.stringify(deliveryPoint);
+    
+    // Update UI
+    document.getElementById('selected-point-info').innerHTML = `
+        <strong>${deliveryPoint.name}</strong><br>
+        ${deliveryPoint.contact.address}<br>
+        ${deliveryPoint.contact.postalCode} ${deliveryPoint.contact.city}
+    `;
+});
+</script>
+```
+
+### Modal Integration
+
+```php
+<button class="btn btn-primary" onclick="glsOpenModal('delivery-modal')">
+    📦 Choose Pickup Point
+</button>
+
+<x-gls-map 
+    country="CZ" 
+    widget-type="dialog" 
+    id="delivery-modal"
+    filter-type="parcel-locker"
+/>
+```
+
+### Multi-Language Support
+
+```php
+@switch(app()->getLocale())
+    @case('cs')
+        <x-gls-map country="CZ" language="CS" />
+        @break
+    @case('sk')
+        <x-gls-map country="SK" language="SK" />
+        @break
+    @default
+        <x-gls-map country="CZ" language="EN" />
+@endswitch
+```
+
+## Browser Compatibility
+
+- **Modern Browsers**: Chrome 70+, Firefox 70+, Safari 12+, Edge 79+
+- **Geolocation**: Requires HTTPS in production
+- **JavaScript**: ES6 modules supported
+
+## Performance
+
+- **Lazy Loading**: GLS scripts load only when needed
+- **Caching**: Geolocation results cached for 1 hour
+- **Lightweight**: ~15KB additional JavaScript
+- **CDN**: Uses GLS official CDN endpoints
+
+## Troubleshooting
+
+### Common Issues
+
+**Geolocation not working:**
+- Ensure your site uses HTTPS in production
+- Check browser permissions
+- Verify Nominatim endpoint is accessible
+
+**Widget not loading:**
+- Check console for JavaScript errors
+- Verify country code is supported
+- Ensure GLS scripts are accessible
+
+**Styling issues:**
+- Publish and customize views if needed
+- Check for CSS conflicts
+- Use browser developer tools to debug
+
+### Debug Mode
+
+```php
+<x-gls-map 
+    country="SK" 
+    :use-geolocation="true"
+    id="debug-widget"
+/>
+
+<script>
+// Enable debugging
+console.log('GLS Config:', window.glsMapConfig);
+
+// Listen to all events
+document.addEventListener('gls-location-updated', console.log);
+document.addEventListener('gls-delivery-point-selected', console.log);
+</script>
+```
+
+## API Reference
+
+### GlsMapComponent Methods
+
+```php
+// Get widget HTML attributes
+$component->getWidgetAttributes(): array
+
+// Get widget attributes as HTML string  
+$component->getWidgetAttributesString(): string
+
+// Get container CSS styles
+$component->getContainerStyles(): string
+
+// Get geolocation configuration
+$component->getGeolocationConfig(): array
+```
+
+### JavaScript API
+
+```javascript
+// Initialize geolocation manually
+window.initializeGlsGeolocation(elementId);
+
+// Access geolocation instance
+const geolocation = new window.GlsGeolocation(config);
+
+// Open modal programmatically
+window.glsOpenModal(elementId);
 ```
 
 ## Testing
@@ -70,6 +345,12 @@ echo $variable->echoPhrase('Hello, VendorName!');
 ```bash
 composer test
 ```
+
+The package includes comprehensive tests:
+
+- **Unit Tests**: Component logic and validation
+- **Feature Tests**: Blade rendering and integration
+- **Configuration Tests**: Config file validation
 
 ## Changelog
 
@@ -83,11 +364,10 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
 
-## Credits
-
-- [:author_name](https://github.com/:author_username)
-- [All Contributors](../../contributors)
-
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+
+---
+
+**Made with ❤️ by [WebSystem Studio](https://github.com/WebSystem-studio)**
